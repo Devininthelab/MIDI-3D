@@ -15,6 +15,22 @@ from midi.pipelines.pipeline_midi import MIDIPipeline
 from midi.utils.smoothing import smooth_gpu
 
 
+def prepare_pipeline(device, dtype):
+    local_dir = "pretrained_weights/MIDI-3D"
+    snapshot_download(repo_id="VAST-AI/MIDI-3D", local_dir=local_dir)
+    pipe: MIDIPipeline = MIDIPipeline.from_pretrained(local_dir).to(device, dtype)
+    pipe.init_custom_adapter(
+        set_self_attn_module_names=[
+            "blocks.8",
+            "blocks.9",
+            "blocks.10",
+            "blocks.11",
+            "blocks.12",
+        ]
+    )
+    return pipe
+
+
 def preprocess_image(rgb_image, seg_image):
     if isinstance(rgb_image, str):
         rgb_image = Image.open(rgb_image)
@@ -110,17 +126,21 @@ def run_midi(
         rgb_image, seg_image = preprocess_image(rgb_image, seg_image)
     instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
 
+    pipe_kwargs = {}
+    if seed != -1 and isinstance(seed, int):
+        pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
+
     num_instances = len(instance_rgbs)
     outputs = pipe(
         image=instance_rgbs,
         mask=instance_masks,
         image_scene=scene_rgbs,
         attention_kwargs={"num_instances": num_instances},
-        generator=torch.Generator(device=pipe.device).manual_seed(seed),
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
         decode_progressive=True,
         return_dict=False,
+        **pipe_kwargs,
     )
 
     # marching cubes
@@ -160,19 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", type=str, default="./")
     args = parser.parse_args()
 
-    local_dir = "pretrained_weights/MIDI-3D"
-    snapshot_download(repo_id="VAST-AI/MIDI-3D", local_dir=local_dir)
-    pipe: MIDIPipeline = MIDIPipeline.from_pretrained(local_dir).to(device, dtype)
-    pipe.init_custom_adapter(
-        set_self_attn_module_names=[
-            "blocks.8",
-            "blocks.9",
-            "blocks.10",
-            "blocks.11",
-            "blocks.12",
-        ]
-    )
-
+    pipe = prepare_pipeline(device, dtype)
     run_midi(
         pipe,
         rgb_image=args.rgb,

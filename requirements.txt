@@ -13,3 +13,5 @@ scikit-image
 numpy
 peft
 pytorch-lightning
+open3d
+pymeshlab
