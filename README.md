@@ -14,7 +14,7 @@ MIDI is a 3D generative model for single image to compositional 3D scene generat
 
 ## 🔥 Updates
 
-* [2025-05] 🌟🌟🌟 Release **textured** 3D scene generation from a single image. Check [it](#textured-3d-scene-generation) out!
+* [2025-05] 🌟🌟🌟 Release **textured** 3D scene generation from a single image!
 * [2025-04] Release [dataset](https://huggingface.co/datasets/huanngzh/3D-Front) and evaluation code.
 * [2025-03] Release model weights, gradio demo, inference scripts of MIDI-3D.
 
@@ -45,6 +45,14 @@ pip install -r requirements.txt
 ```
 
 For evaluation, you should follow [facebookresearch/pytorch3d](https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md) to install `pytorch3d` package.
+
+For textured 3D scene generation, you should install [MV-Adapter](https://github.com/huanngzh/MV-Adapter):
+
+```Bash
+pip install git+https://github.com/huanngzh/MV-Adapter
+```
+
+> Ensure the version of gradio is `gradio==4.44.1`. If the installation of mvadapter causes the gradio version to be updated, be sure to reinstall gradio.
 
 ## 💡 Usage
 
@@ -81,17 +89,11 @@ python -m scripts.inference_midi --rgb assets/example_data/Cartoon-Style/00_rgb.
 * We recommend using the [interactive demo](#launch-demo) to get a segmentation map of moderate granularity.
 * If instances in your image are too close to the image border, please add `--do-image-padding` to the running scripts of MIDI.
 
-### Textured 3D Scene Generation
+**Textured 3D Scene Generation**
 
-> It may require about 40G of video memory. PRs to optimize VRAM requirements are welcome!
+> It may require about 30G of VRAM. PRs to optimize VRAM requirements are welcome!
 
-You should firstly install [MV-Adapter](https://github.com/huanngzh/MV-Adapter):
-
-```Bash
-pip install git+https://github.com/huanngzh/MV-Adapter
-```
-
-Then one script to create textured 3d scene!
+One script to create textured 3d scene!
 
 ```Bash
 python -m scripts.image_to_textured_scene --rgb_image assets/example_data/Cartoon-Style/01_rgb.png --seg_image assets/example_data/Cartoon-Style/01_seg.png --seed 42 --output output
