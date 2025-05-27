@@ -1,5 +1,4 @@
 gradio==4.44.1
-gradio_litmodel3d
 gradio_image_prompter
 diffusers
 transformers

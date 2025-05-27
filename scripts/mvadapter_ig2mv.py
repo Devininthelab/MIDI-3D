@@ -71,6 +71,8 @@ def prepare_pipeline(
         model_, name_ = lora_model.rsplit("/", 1)
         pipe.load_lora_weights(model_, weight_name=name_)
 
+    pipe.enable_vae_slicing()
+
     return pipe
 
 

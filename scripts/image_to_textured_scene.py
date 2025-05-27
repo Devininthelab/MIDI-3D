@@ -80,6 +80,7 @@ def run_i2tex(
     os.makedirs(output_dir, exist_ok=True)
 
     scene.export(f"{output_dir}/scene_notextured.glb")
+    print(f"Total meshes in scene: {len(scene.geometry)}")
 
     instance_rgbs, instance_masks, _ = midi_infer.split_rgb_mask(rgb_image, seg_image)
 
@@ -99,7 +100,8 @@ def run_i2tex(
         # prepare mvadapter input
         rgba = rgb.convert("RGBA")
         rgba.putalpha(mask)
-        rgba.save(f"{output_dir}/rgba_{i}.png")
+        rgba_path = f"{output_dir}/rgba_{i}.png"
+        rgba.save(rgba_path)
 
         # run mvadapter
         mv_images, _, _, _, _ = ig2mv_infer.run_pipeline(
@@ -132,9 +134,9 @@ def run_i2tex(
             camera_azimuth_deg=[x - 90 for x in [0, 90, 180, 270, 180, 180]],
         )
         textured_obj_path = texture_out.shaded_model_save_path
-        print(f"Textured object {i} path: {textured_obj_path}")
 
-        textured_scene.add_geometry(trimesh.load(textured_obj_path, process=False))
+        textured_mesh = trimesh.load(textured_obj_path, process=False)
+        textured_scene.add_geometry(textured_mesh)
 
         torch.cuda.empty_cache()
 
