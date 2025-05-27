@@ -58,7 +58,7 @@ python gradio_demo.py
 
 **Important!!** Please check out our instructional video!
 
-https://github.com/user-attachments/assets/814c046e-f5c3-47cf-bb56-60154be8374c
+https://github.com/user-attachments/assets/47bc6e71-f232-404e-8ac9-a12b2859220c
 
 **The web demo is also available on [Hugging Face Spaces](https://huggingface.co/spaces/VAST-AI/MIDI-3D)!**
 
