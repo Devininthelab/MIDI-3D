@@ -152,10 +152,11 @@ If the dataset is not organized in `data/3d-front`, you should modify the config
 ## Citation
 
 ```
-@article{huang2024midi,
-  title={MIDI: Multi-Instance Diffusion for Single Image to 3D Scene Generation},
-  author={Huang, Zehuan and Guo, Yuanchen and An, Xingqiao and Yang, Yunhan and Li, Yangguang and Zou, Zixin and Liang, Ding and Liu, Xihui and Cao, Yanpei and Sheng, Lu},
-  journal={arXiv preprint arXiv:2412.03558},
-  year={2024}
+@inproceedings{huang2025midi,
+  title={Midi: Multi-instance diffusion for single image to 3d scene generation},
+  author={Huang, Zehuan and Guo, Yuan-Chen and An, Xingqiao and Yang, Yunhan and Li, Yangguang and Zou, Zi-Xin and Liang, Ding and Liu, Xihui and Cao, Yan-Pei and Sheng, Lu},
+  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
+  pages={23646--23657},
+  year={2025}
 }
 ```
