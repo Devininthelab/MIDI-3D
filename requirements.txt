@@ -1,7 +1,8 @@
 gradio==4.44.1
 gradio_image_prompter
 diffusers
-transformers
+transformers==4.49.0
+pydantic==2.10.6
 einops
 torch-cluster
 huggingface_hub
