@@ -10,3 +10,7 @@ object_detector, sam_processor, sam_segmentator = prepare_model(
     detector_id="IDEA-Research/grounding-dino-base",
     segmenter_id="facebook/sam-vit-base",
 )
+
+print(object_detector)
+print(sam_processor)
+print(sam_segmentator)

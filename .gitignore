@@ -3,4 +3,4 @@ __pycache__/
 checkpoints/
 pretrained_weights/
 pytorch_cluster/
-nvidiffrast/
+nvdiffrast/
