@@ -9,6 +9,38 @@ from mvadapter.pipelines.pipeline_texture import ModProcessConfig, TexturePipeli
 from PIL import Image
 from tqdm import tqdm
 
+# Patch NVDiffRastContextWrapper to use CUDA context instead of OpenGL
+try:
+    from mvadapter.utils.mesh_utils.render import NVDiffRastContextWrapper
+    from mvadapter.utils.mesh_utils.projection import CameraProjection
+    import inspect
+    
+    # Patch NVDiffRastContextWrapper to default to CUDA
+    original_nvdiff_init = NVDiffRastContextWrapper.__init__
+    def patched_nvdiff_init(self, device: str, context_type: str = "cuda"):
+        original_nvdiff_init(self, device, context_type)
+    NVDiffRastContextWrapper.__init__ = patched_nvdiff_init
+    
+    # Patch CameraProjection to force CUDA context
+    original_camera_init = CameraProjection.__init__
+    camera_sig = inspect.signature(original_camera_init)
+    
+    def patched_camera_init(self, *args, **kwargs):
+        # Bind arguments to get the parameter names
+        bound_args = camera_sig.bind_partial(self, *args, **kwargs)
+        bound_args.apply_defaults()
+        
+        # Force context_type to "cuda"
+        bound_args.arguments['context_type'] = "cuda"
+        
+        # Call the original function with modified arguments
+        original_camera_init(*bound_args.args, **bound_args.kwargs)
+    
+    CameraProjection.__init__ = patched_camera_init
+    
+except ImportError:
+    pass  # Fallback if import fails
+
 import scripts.inference_midi as midi_infer
 import scripts.mvadapter_ig2mv as ig2mv_infer
 from midi.pipelines.pipeline_midi import MIDIPipeline

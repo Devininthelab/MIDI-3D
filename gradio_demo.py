@@ -361,4 +361,7 @@ with gr.Blocks() as demo:
         outputs=[textured_model_output, download_textured_glb, seed],
     ).then(lambda: gr.Button(interactive=True), outputs=[download_textured_glb])
 
-demo.launch()
+demo.launch(share=True)
+
+
+# https://github.com/NVlabs/nvdiffrast/issues/94 solve issue hehe

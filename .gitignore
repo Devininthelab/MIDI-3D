@@ -1,0 +1,6 @@
+tmp/
+__pycache__/
+checkpoints/
+pretrained_weights/
+pytorch_cluster/
+nvidiffrast/
