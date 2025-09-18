@@ -1,3 +1,4 @@
+# https://github.com/NVlabs/nvdiffrast/issues/94 solve issue hehe
 import os
 import random
 import uuid
@@ -364,4 +365,3 @@ with gr.Blocks() as demo:
 demo.launch(share=True)
 
 
-# https://github.com/NVlabs/nvdiffrast/issues/94 solve issue hehe
