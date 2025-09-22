@@ -21,5 +21,5 @@ write_path = "/home/minhthan001/ThreeD/MIDI-3D/assets/my_results"
 
 image = Image.open(image_path).convert("RGB")
 
-text_labels = "a cat"
+text_labels = ["cat"]
 detections = detect(object_detector, image, text_labels, detect_threshold=0.3)

@@ -1,5 +1,5 @@
 # Adapted from https://github.com/NielsRogge/Transformers-Tutorials/blob/master/Grounding%20DINO/GroundingDINO_with_Segment_Anything.ipynb
-
+# DONE
 import argparse
 import os
 import random
@@ -134,6 +134,8 @@ class DetectionResult:
 
 # Utils
 def mask_to_polygon(mask: np.ndarray) -> List[List[int]]:
+    # Basically to find the largest contour and use it as the polygon
+    # Contour is the line around the segmented object
     # Find contours in the binary mask
     contours, _ = cv2.findContours(
         mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
@@ -213,6 +215,7 @@ def refine_masks(
 
 # Post-processing Utils
 def generate_colored_segmentation(label_image):
+    # Function for visualize the segmentation map with colored classes
     # Create a PIL Image from the label image (assuming it's a 2D numpy array)
     label_image_pil = Image.fromarray(label_image.astype(np.uint8), mode="P")
 
@@ -238,6 +241,13 @@ def prepare_model(
     detector_id: Optional[str] = None,
     segmenter_id: Optional[str] = None,
 ):
+    """
+    Prepare the Grounding DINO object detector and SAM segmentator.
+    Grouding DINO is just to predict the bounding boxes of the objects given the text labels.
+    While SAM is to predict the segmentation masks given the bounding boxes.
+
+    Grounded SAM = Grounding DINO + SAM = text to segmentation
+    """
     detector_id = (
         detector_id if detector_id is not None else "IDEA-Research/grounding-dino-tiny"
     )
@@ -260,6 +270,7 @@ def detect(
 ) -> List[Dict[str, Any]]:
     """
     Use Grounding DINO to detect a set of labels in an image in a zero-shot fashion.
+    Labels should be a list of strings, such as ["cat", "dog", "car"].
     """
     labels = [label if label.endswith(".") else label + "." for label in labels]
 
@@ -279,6 +290,13 @@ def segment(
 ) -> List[DetectionResult]:
     """
     Use Segment Anything (SAM) to generate masks given an image + a set of bounding boxes.
+    Input:
+    - image: PIL Image + bboxes or detection results from Grounding DINO
+    Runs SAM to generate masks for each object
+    Optinally refine the masks using polygon approximation
+
+    Output:
+    - List of DetectionResult with masks added
     """
     if detection_results is None and boxes is None:
         raise ValueError(

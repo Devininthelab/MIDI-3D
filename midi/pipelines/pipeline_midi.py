@@ -113,7 +113,7 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         feature_extractor_2: BitImageProcessor,
     ):
         super().__init__()
-
+        # register_modules inherit from DiffusionPipeline, which help saving/loading
         self.register_modules(
             vae=vae,
             transformer=transformer,
@@ -149,6 +149,7 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         return self._decode_progressive
 
     def encode_image_1(self, image, device, num_images_per_prompt):
+        # for CLIP image condition generation
         dtype = next(self.image_encoder_1.parameters()).dtype
 
         if not isinstance(image, torch.Tensor):
@@ -171,6 +172,7 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         device,
         num_images_per_prompt,
     ):
+        # for image editing with mask
         dtype = next(self.image_encoder_2.parameters()).dtype
 
         images = [image_one, image_two, mask]
@@ -254,8 +256,8 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
             )
             sampled_points = torch.FloatTensor(sampled_points).to(
                 device=device, dtype=dtype
-            )
-            sampled_points = sampled_points.unsqueeze(0).expand(batch_size, -1, -1)
+            ) # [num_points = (2^octree_depth + 1) ^ 3, 3]
+            sampled_points = sampled_points.unsqueeze(0).expand(batch_size, -1, -1) # [batch_size, num_points, 3]
 
             grid_sizes.append(grid_size)
             bbox_sizes.append(bbox_size)
@@ -265,7 +267,7 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         self.vae: TripoSGVAEModel
         output = self.vae.decode(
             latents, sampled_points=sampled_points, to_cpu=decode_to_cpu
-        ).sample
+        ).sample # first decode, [batch_size, num_points, 1] where the last dimension is sdf (occupancy for each points)
 
         if not decode_progressive:
             return (output, grid_sizes, bbox_sizes, bbox_mins, bbox_maxs)
