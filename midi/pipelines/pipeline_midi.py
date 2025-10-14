@@ -104,8 +104,8 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
 
     def __init__(
         self,
-        vae: TripoSGVAEModel,
-        transformer: TripoSGDiTModel,
+        vae: TripoSGVAEModel, # for decode the latents to 3D shape
+        transformer: TripoSGDiTModel, # for produce the latents for 3D shape
         scheduler: FlowMatchEulerDiscreteScheduler,
         image_encoder_1: CLIPVisionModelWithProjection,
         image_encoder_2: Dinov2Model,

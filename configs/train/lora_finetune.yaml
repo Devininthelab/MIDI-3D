@@ -1,0 +1,57 @@
+# Configuration file for LoRA finetuning of MIDI-3D
+
+# Experiment settings
+name: "midi3d_lora_finetune"
+output_dir: "outputs/lora_finetune"
+seed: 42
+
+# Model settings
+pretrained_model: "pretrained_weights/MIDI-3D"
+
+# LoRA configuration
+lora_rank: 16
+lora_alpha: 16
+lora_dropout: 0.1
+lora_target_modules:
+  - "to_q"
+  - "to_k"
+  - "to_v"
+  - "to_out.0"
+
+# Multi-instance attention
+enable_multi_instance_attention: true
+mi_attention_blocks:
+  - "blocks.8"
+  - "blocks.9"
+  - "blocks.10"
+  - "blocks.11"
+  - "blocks.12"
+
+# Training settings
+batch_size: 4
+gradient_accumulation_steps: 1
+num_epochs: 100
+learning_rate: 1.0e-4
+lr_scheduler: "cosine"
+lr_warmup_steps: 500
+max_grad_norm: 1.0
+gradient_checkpointing: true
+
+# Data settings
+data_dir: "data/training_data"  # Update this to your data directory
+image_size: 512
+
+# Noise scheduler for training
+weighting_scheme: "logit_normal_dist"
+logit_mean: 0.0
+logit_std: 1.0
+
+# Checkpointing
+save_every_n_epochs: 10
+checkpointing_steps: 500
+
+# Mixed precision
+mixed_precision: "fp16"  # Options: "no", "fp16", "bf16"
+
+# Resume from checkpoint (optional)
+resume_from_checkpoint: null
