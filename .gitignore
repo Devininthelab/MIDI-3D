@@ -5,3 +5,4 @@ pretrained_weights/
 pytorch_cluster/
 nvdiffrast/
 assets/my_results/textured_cat_scene
+synthetic_data/

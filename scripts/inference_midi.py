@@ -169,6 +169,63 @@ def run_midi(
 
     return scene
 
+@torch.no_grad()
+def run_midi_and_return_latents(
+    pipe: Any,
+    rgb_image: Union[str, Image.Image],
+    seg_image: Union[str, Image.Image],
+    seed: int,
+    num_inference_steps: int = 50,
+    guidance_scale: float = 7.0,
+    do_image_padding: bool = False,
+) -> tuple[trimesh.Scene, torch.Tensor]:
+    if do_image_padding:
+        rgb_image, seg_image = preprocess_image(rgb_image, seg_image)
+    instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
+
+    pipe_kwargs = {}
+    if seed != -1 and isinstance(seed, int):
+        pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
+
+    num_instances = len(instance_rgbs)
+    outputs, latents, cond = pipe(
+        image=instance_rgbs,
+        mask=instance_masks,
+        image_scene=scene_rgbs,
+        attention_kwargs={"num_instances": num_instances},
+        num_inference_steps=num_inference_steps,
+        guidance_scale=guidance_scale,
+        decode_progressive=True,
+        return_dict=False,
+        return_latents=True,
+        **pipe_kwargs,
+    )
+    # outputs are a tuple of (logits, grid_sizes, bbox_sizes, bbox_mins, bbox_maxs) where logits are number of samples
+    # print(outputs[0].shape, len(outputs[1]), len(outputs[2]), len(outputs[3]), len(outputs[4]))
+    # if 2 objects : torch.Size([2, 16974593, 1]) 2 2 2 2
+    # if 4 objects : torch.Size([4, 16974593, 1]) 4 4 4 4
+
+    # marching cubes
+    trimeshes = []
+    for _, (logits_, grid_size, bbox_size, bbox_min, bbox_max) in enumerate(
+        zip(*outputs)
+    ):
+        grid_logits = logits_.view(grid_size)
+        grid_logits = smooth_gpu(grid_logits, method="gaussian", sigma=1)
+        torch.cuda.empty_cache()
+        vertices, faces, normals, _ = measure.marching_cubes(
+            grid_logits.float().cpu().numpy(), 0, method="lewiner"
+        )
+        vertices = vertices / grid_size * bbox_size + bbox_min
+
+        # Trimesh
+        mesh = trimesh.Trimesh(vertices.astype(np.float32), np.ascontiguousarray(faces))
+        trimeshes.append(mesh)
+
+    # compose the output meshes
+    scene = trimesh.Scene(trimeshes)
+
+    return scene, latents, cond
 
 if __name__ == "__main__":
     device = "cuda"

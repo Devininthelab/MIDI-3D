@@ -13,7 +13,7 @@ from scripts.image_to_textured_scene import (
     prepare_texture_pipeline,
     run_i2tex,
 )
-from scripts.inference_midi import run_midi, preprocess_image, split_rgb_mask
+from scripts.inference_midi import run_midi, preprocess_image, split_rgb_mask, run_midi_and_return_latents
 
 # Test variables
 seg_map_pil_path  = 'assets/example_data/BlendSwap/breakfast-room_seg.png'
@@ -44,28 +44,40 @@ seed = 42
 num_inference_steps = 50
 guidance_scale = 7.0
 with torch.no_grad():
-    if do_image_padding:
-        rgb_image, seg_image = preprocess_image(img_pil_path, seg_map_pil_path)
-    instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
-    pipe_kwargs = {}
-    if seed != -1 and isinstance(seed, int):
-        pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
+    # if do_image_padding:
+    #     rgb_image, seg_image = preprocess_image(img_pil_path, seg_map_pil_path)
+    # instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
+    # pipe_kwargs = {}
+    # if seed != -1 and isinstance(seed, int):
+    #     pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
 
-    num_instances = len(instance_rgbs)
-    print(f"Detected {num_instances} instances")
-    outputs = pipe(
-        image=instance_rgbs,
-        mask=instance_masks,
-        image_scene=scene_rgbs,
-        attention_kwargs={"num_instances": num_instances},
-        num_inference_steps=num_inference_steps,
-        guidance_scale=guidance_scale,
-        decode_progressive=True,
-        output_type='latent',
-        return_dict=True,
-        **pipe_kwargs,
+    # num_instances = len(instance_rgbs)
+    # print(f"Detected {num_instances} instances")
+    # outputs = pipe(
+    #     image=instance_rgbs,
+    #     mask=instance_masks,
+    #     image_scene=scene_rgbs,
+    #     attention_kwargs={"num_instances": num_instances},
+    #     num_inference_steps=num_inference_steps,
+    #     guidance_scale=guidance_scale,
+    #     decode_progressive=True,
+    #     output_type='latent',
+    #     return_dict=True,
+    #     **pipe_kwargs,
+    # )
+    # print(outputs.samples.shape)
+
+    # ALso workS
+    scene, latents, cond = run_midi_and_return_latents(
+        pipe,
+        rgb_image=img_pil_path,
+        seg_image=seg_map_pil_path,
+        do_image_padding=do_image_padding,
+        seed=seed,
     )
-    print(outputs.samples.shape)
+    print(type(scene))
+    print(cond)
+    # print(torch.equal(latents, outputs.samples))  # True
 
 # need to take the x0 before put to the vae
 

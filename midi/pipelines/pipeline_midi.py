@@ -332,6 +332,7 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         output_type: Optional[str] = "mesh_vf",
         return_dict: bool = True,
+        return_latents: bool = False,
     ):
         # 1. Check inputs. Raise error if not correct
         # TODO
@@ -386,6 +387,8 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
             generator,
             latents,
         )
+
+
 
         # 6. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
@@ -457,6 +460,10 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
 
         grid_sizes, bbox_sizes, bbox_mins, bbox_maxs = None, None, None, None
 
+        if return_latents:
+            z_0 = latents.clone()
+            cond = {"image_embeds_1": image_embeds_1.clone(), "image_embeds_2": image_embeds_2.clone()}
+
         if output_type == "latent":
             output = latents
         else:
@@ -471,7 +478,18 @@ class MIDIPipeline(DiffusionPipeline, TransformerDiffusionMixin, CustomAdapterMi
         self.maybe_free_model_hooks()
 
         if not return_dict:
+            if return_latents:
+                return (output, grid_sizes, bbox_sizes, bbox_mins, bbox_maxs), z_0, cond
             return (output, grid_sizes, bbox_sizes, bbox_mins, bbox_maxs)
+
+        if return_latents:
+            return TripoSGPipelineOutput(
+                samples=output,
+                grid_sizes=grid_sizes,
+                bbox_sizes=bbox_sizes,
+                bbox_mins=bbox_mins,
+                bbox_maxs=bbox_maxs,
+            ), z_0, cond
 
         return TripoSGPipelineOutput(
             samples=output,
