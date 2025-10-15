@@ -141,12 +141,6 @@ def simulate_single_model(mesh_path, up_dir):
         mesh.update_faces(mesh.unique_faces())
         mesh.merge_vertices()
         
-        # Simplify mesh if it's too complex for simulation
-        max_faces = 10000  # Reduce mesh complexity
-        if len(mesh.faces) > max_faces:
-            print(f"Mesh has {len(mesh.faces)} faces, simplifying to {max_faces}")
-            # Use convex hull as a simplified representation for physics
-            mesh = mesh.convex_hull
         
         vertices = np.array(mesh.vertices)
         if up_dir == "y":
@@ -166,7 +160,7 @@ def simulate_single_model(mesh_path, up_dir):
     except Exception as e:
         print(f"Error processing {mesh_path}: {e}")
         return 
-    
+ 
 def simulate_models(mesh_paths, up_dir="y", num_workers=None):
     process_fn = partial(simulate_single_model, up_dir=up_dir)
     angles = []
@@ -183,3 +177,55 @@ def simulate_models(mesh_paths, up_dir="y", num_workers=None):
     if len(valid_angles) < len(mesh_paths):
         return None
     return np.array(valid_angles)
+
+
+##### FOR MIDI CODE ####
+def simulate_single_model_mesh_obj(mesh_obj, up_dir):
+    try: 
+        mesh = trimesh.util.concatenate(mesh_obj)
+
+        if isinstance(mesh, trimesh.points.PointCloud):
+            print(f"Mesh at {mesh_obj} is a PointCloud, skipping.")
+            return None
+
+        mesh.update_faces(mesh.unique_faces())
+        mesh.merge_vertices()
+        
+        
+        vertices = np.array(mesh.vertices)
+        if up_dir == "y":
+            vertices[:, [1, 2]] = vertices[:, [2, 1]]
+        elif up_dir == "x":
+            vertices[:, [0, 2]] = vertices[:, [2, 0]]
+
+        vertices[:, 2] -= np.min(vertices[:, 2]) # align bottom to z=0
+        faces = np.array(mesh.faces).astype(np.int32)
+
+        if vertices.shape[0] == 0 or faces.shape[0] == 0:
+            print(f"Mesh at {mesh_obj} has no vertices or faces, skipping.")
+            return None
+        
+        angle = get_sim_angles(vertices, faces)
+        return angle
+    except Exception as e:
+        print(f"Error processing {mesh_obj}: {e}")
+        return 
+
+def simulate_scenes(mesh_scene_paths, up_dir="y", num_workers=None):
+    try:
+        angles = []
+        for mesh_path in tqdm(mesh_scene_paths):
+            if not os.path.exists(mesh_path):
+                print(f"Mesh path {mesh_path} does not exist, skipping.")
+                angles.append(None)
+            
+            mesh_scene = trimesh.load(mesh_path)
+            current_angles = []
+            for geom in mesh_scene.geometry.values():
+                angle = simulate_single_model_mesh_obj(geom, up_dir)
+                current_angles.append(angle)
+            angles.append(current_angles)
+        return angles
+    except Exception as e:
+        print(f"Error in simulate_multiple_models: {e}")
+        return None

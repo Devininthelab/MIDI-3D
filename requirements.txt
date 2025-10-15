@@ -20,3 +20,4 @@ notebook
 mujoco
 tqdm
 wandb
+peft

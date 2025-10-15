@@ -1,17 +1,16 @@
-from data_preprocessing.simulation_utils import simulate_models
-import trimesh
+from data_preprocessing.simulation_utils import simulate_scenes
+# # Simple example: simulate a mesh and output a video
+# mesh_path = 'tmp/mesh_0.glb'
+# output_video = 'tmp/simulation_output.mp4'
 
-mesh_path = 'tmp/midi3d_a7095494-f06f-43ae-bc3b-1202d8ec5bdd.glb'
+# simulate_and_visualize(
+#     mesh_path=mesh_path,
+#     output_video=output_video,
+#     up_dir='y',
+#     duration=10.0,
+#     fps=30
+# )
 
-mesh_obj = trimesh.load(mesh_path)
-print(mesh_obj)
-# If it's a Scene, dump to list of meshes
-if isinstance(mesh_obj, trimesh.Scene):
-    meshes = mesh_obj.dump()
-    print(f"Number of meshes: {len(meshes)}")
-    for i, mesh in enumerate(meshes):
-        print(f"Mesh {i}: {mesh}")
-
-
-angles = simulate_models([mesh_path], up_dir="y", num_workers=1)
-print(angles)
+mesh_path = "tmp/midi3d_43a9bc4f-6f93-48e7-807e-fbb7b3381a18.glb"
+angles = simulate_scenes([mesh_path], up_dir='y')
+print(f"Stable angles: {angles}")
