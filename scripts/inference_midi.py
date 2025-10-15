@@ -142,6 +142,10 @@ def run_midi(
         return_dict=False,
         **pipe_kwargs,
     )
+    # outputs are a tuple of (logits, grid_sizes, bbox_sizes, bbox_mins, bbox_maxs) where logits are number of samples
+    # print(outputs[0].shape, len(outputs[1]), len(outputs[2]), len(outputs[3]), len(outputs[4]))
+    # if 2 objects : torch.Size([2, 16974593, 1]) 2 2 2 2
+    # if 4 objects : torch.Size([4, 16974593, 1]) 4 4 4 4
 
     # marching cubes
     trimeshes = []

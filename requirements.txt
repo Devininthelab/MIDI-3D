@@ -17,3 +17,6 @@ open3d
 pymeshlab
 ipykernel
 notebook
+mujoco
+tqdm
+wandb
