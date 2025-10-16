@@ -44,39 +44,39 @@ seed = 42
 num_inference_steps = 50
 guidance_scale = 7.0
 with torch.no_grad():
-    # if do_image_padding:
-    #     rgb_image, seg_image = preprocess_image(img_pil_path, seg_map_pil_path)
-    # instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
-    # pipe_kwargs = {}
-    # if seed != -1 and isinstance(seed, int):
-    #     pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
+    if do_image_padding:
+        rgb_image, seg_image = preprocess_image(img_pil_path, seg_map_pil_path)
+    instance_rgbs, instance_masks, scene_rgbs = split_rgb_mask(rgb_image, seg_image)
+    pipe_kwargs = {}
+    if seed != -1 and isinstance(seed, int):
+        pipe_kwargs["generator"] = torch.Generator(device=pipe.device).manual_seed(seed)
 
-    # num_instances = len(instance_rgbs)
-    # print(f"Detected {num_instances} instances")
-    # outputs = pipe(
-    #     image=instance_rgbs,
-    #     mask=instance_masks,
-    #     image_scene=scene_rgbs,
-    #     attention_kwargs={"num_instances": num_instances},
-    #     num_inference_steps=num_inference_steps,
-    #     guidance_scale=guidance_scale,
-    #     decode_progressive=True,
-    #     output_type='latent',
-    #     return_dict=True,
-    #     **pipe_kwargs,
-    # )
-    # print(outputs.samples.shape)
+    num_instances = len(instance_rgbs)
+    print(f"Detected {num_instances} instances")
+    outputs = pipe(
+        image=instance_rgbs,
+        mask=instance_masks,
+        image_scene=scene_rgbs,
+        attention_kwargs={"num_instances": num_instances},
+        num_inference_steps=num_inference_steps,
+        guidance_scale=guidance_scale,
+        decode_progressive=True,
+        output_type='latent',
+        return_dict=True,
+        **pipe_kwargs,
+    )
+    print(outputs.samples.shape)
 
     # ALso workS
-    scene, latents, cond = run_midi_and_return_latents(
-        pipe,
-        rgb_image=img_pil_path,
-        seg_image=seg_map_pil_path,
-        do_image_padding=do_image_padding,
-        seed=seed,
-    )
-    print(type(scene))
-    print(cond)
+    # scene, latents, cond = run_midi_and_return_latents(
+    #     pipe,
+    #     rgb_image=img_pil_path,
+    #     seg_image=seg_map_pil_path,
+    #     do_image_padding=do_image_padding,
+    #     seed=seed,
+    # )
+    # print(type(scene))
+    # print(cond)
     # print(torch.equal(latents, outputs.samples))  # True
 
 # need to take the x0 before put to the vae
