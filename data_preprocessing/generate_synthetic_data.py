@@ -63,7 +63,7 @@ for image_path in tqdm(images[args.job_id::args.num_jobs]):
     save_root = os.path.join(output_dir, f"{category}/{prompt}")
     os.makedirs(save_root, exist_ok=True)
     generate_3d = True
-    if len(glob(os.path.join(save_root, f"{image_name.replace('.jpg', '_*.glb').replace('.png', '_*.glb')}"))) >= args.num_samples:
+    if len(glob(os.path.join(save_root, f"{image_name.replace('_rgb.jpg', '_*.glb').replace('_rgb.png', '_*.glb')}"))) >= args.num_samples:
         generate_3d = False
     
     if generate_3d:
@@ -72,8 +72,8 @@ for image_path in tqdm(images[args.job_id::args.num_jobs]):
             skip_batch = True
             for i in range(sample_batch_size):
                 eid = bid * sample_batch_size + i
-                glb_path = os.path.join(save_root, f"{image_name.replace('.jpg', f'_{eid:03d}.glb').replace('.png', f'_{eid:03d}.glb')}")
-                sparse_sample_path = os.path.join(save_root, f"{image_name.replace('.jpg', f'_sparse_sample_{eid:03d}.pt').replace('.png', f'_sparse_sample_{eid:03d}.pt')}") #latents before decoding
+                glb_path = os.path.join(save_root, f"{image_name.replace('_rgb.jpg', f'_{eid:03d}.glb').replace('_rgb.png', f'_{eid:03d}.glb')}")
+                sparse_sample_path = os.path.join(save_root, f"{image_name.replace('_rgb.jpg', f'_sparse_sample_{eid:03d}.pt').replace('_rgb.png', f'_sparse_sample_{eid:03d}.pt')}") #latents before decoding
                 if not os.path.exists(glb_path) or not os.path.exists(sparse_sample_path):
                     skip_batch = False
                     break
@@ -106,15 +106,15 @@ for image_path in tqdm(images[args.job_id::args.num_jobs]):
                 if bid == 0:
                     # Cache the image cond
                     data_cpu = {k: v.cpu() for k, v in cond.items()}
-                    image_cond_save_path = os.path.join(save_root, f"{image_name.replace('.jpg', '_cond.pt').replace('.png', '_cond.pt')}")
+                    image_cond_save_path = os.path.join(save_root, f"{image_name.replace('_rgb.jpg', '_cond.pt').replace('_rgb.png', '_cond.pt')}")
                     torch.save(data_cpu, image_cond_save_path)
             
                 for i in range(sample_batch_size): # this loop is run 1 time only tho, not sure the purpose of it
                     eid = bid * sample_batch_size + i
                     sparse_sample = latents.cpu()
-                    sparse_sample_save_path = os.path.join(save_root, f"{image_name.replace('.jpg', f'_sparse_sample_{eid:03d}.pt').replace('.png', f'_sparse_sample_{eid:03d}.pt')}")
+                    sparse_sample_save_path = os.path.join(save_root, f"{image_name.replace('_rgb.jpg', f'_sparse_sample_{eid:03d}.pt').replace('_rgb.png', f'_sparse_sample_{eid:03d}.pt')}")
                     torch.save(sparse_sample.cpu(), sparse_sample_save_path)
             # save the glb
             for i in range(sample_batch_size): # this loop is run 1 time only tho, not sure the purpose of it
-                glb_path = os.path.join(save_root, f"{image_name.replace('.jpg', f'_{(bid*sample_batch_size+i):03d}.glb').replace('.png', f'_{(bid*sample_batch_size+i):03d}.glb')}")
+                glb_path = os.path.join(save_root, f"{image_name.replace('_rgb.jpg', f'_{(bid*sample_batch_size+i):03d}.glb').replace('_rgb.png', f'_{(bid*sample_batch_size+i):03d}.glb')}")
                 scene.export(glb_path)

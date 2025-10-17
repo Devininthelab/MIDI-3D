@@ -49,7 +49,7 @@ def process_subdir(subdir, root_dir, num_models_per_image, hard_angle_threshold,
     else:
         # CONSIDER THIS WHEN DOING FINTUNING WITH GENERATION DATA
         all_model_image_ids = np.array([int(os.path.splitext(os.path.basename(mp))[0].split("_")[0])for mp in all_model_paths]).astype(np.int8)
-        all_model_glb_ids = np.array([int(os.path.splitext(os.path.basename(mp))[1].split("_")[1])for mp in all_model_paths]).astype(np.int8)
+        all_model_glb_ids = np.array([int(os.path.splitext(os.path.basename(mp))[0].split("_")[1]) for mp in all_model_paths]).astype(np.int8)
         angles = angles.astype(np.float16)
 
         info_dict = {
